@@ -8,7 +8,8 @@ import "C"
 import "errors"
 
 const (
-	EAGAIN = -11
+	EAGAIN1 = -11
+	EAGAIN2 = -35
 )
 
 func ErrorFromCode(code int) error {

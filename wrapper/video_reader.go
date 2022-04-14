@@ -19,6 +19,7 @@ type VideoReader struct {
 	videoStream *avformat.AVStream
 	rawFrame    *avutil.AVFrame
 	packet      *avcodec.AVPacket
+	videoInfo   *VideoInfo
 }
 
 func (reader *VideoReader) Open() error {
@@ -60,12 +61,13 @@ func (reader *VideoReader) Open() error {
 	return nil
 }
 
-func (reader *VideoReader) Seek(seconds float32) error {
+func (reader *VideoReader) SeekSeconds(seconds float64) error {
 	ts := avutil.AvRescaleQ(int64(seconds*avutil.AV_TIME_BASE), avutil.AV_TIME_BASE_Q, *reader.videoStream.TimeBase())
-	ret := avformat.AvSeekFrame(reader.fmtCtx, reader.videoStream.Index(), ts, 1)
+	ret := avformat.AvSeekFrame(reader.fmtCtx, reader.videoStream.Index(), ts, 0)
 	if ret != 0 {
 		return avutil.ErrorFromCode(ret)
 	}
+	avcodec.AvcodecFlushBuffers(reader.codecCtx)
 	return nil
 }
 
@@ -94,7 +96,7 @@ func (reader *VideoReader) Read() (image.Image, error) {
 					}
 
 					return &img, nil
-				} else if ret != avutil.EAGAIN {
+				} else if ret != avutil.EAGAIN1 {
 					return nil, avutil.ErrorFromCode(ret)
 				}
 			}
@@ -118,4 +120,18 @@ func (r *VideoReader) Release() error {
 		avcodec.AvcodecFreeContext(&r.codecCtx)
 	}
 	return nil
+}
+
+func (r *VideoReader) VideoInfo() *VideoInfo {
+	if r.videoInfo == nil {
+		fps := float64(r.videoStream.RFrameRate().Num()) / float64(r.videoStream.RFrameRate().Den())
+		r.videoInfo = &VideoInfo{
+			Width:      r.videoStream.CodecParameters().Width(),
+			Height:     r.videoStream.CodecParameters().Height(),
+			FrameCount: r.videoStream.NbFrames(),
+			Fps:        fps,
+			Duration:   float64(r.videoStream.NbFrames()) / fps,
+		}
+	}
+	return r.videoInfo
 }

@@ -70,3 +70,7 @@ func AvcodecReceiveFrame(avctx *AVCodecContext, frame *avutil.AVFrame) int {
 		(*C.struct_AVFrame)(unsafe.Pointer(frame)),
 	))
 }
+
+func AvcodecFlushBuffers(avctx *AVCodecContext) {
+	C.avcodec_flush_buffers((*C.struct_AVCodecContext)(unsafe.Pointer(avctx)))
+}
