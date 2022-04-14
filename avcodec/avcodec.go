@@ -2,8 +2,6 @@ package avcodec
 
 //#cgo pkg-config: libavcodec
 //
-//#include <libavcodec/codec_par.h>
-//#include <libavcodec/codec.h>
 //#include <libavcodec/avcodec.h>
 import "C"
 import (

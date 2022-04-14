@@ -3,7 +3,7 @@ package avformat
 //#cgo pkg-config: libavutil libavformat libavcodec
 //
 //#include <libavformat/avformat.h>
-//#include <libavcodec/codec_par.h>
+//#include <libavcodec/avcodec.h>
 import "C"
 import (
 	"jasper-zsh/vttsprite/avcodec"
