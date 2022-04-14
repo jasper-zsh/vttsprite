@@ -32,7 +32,7 @@ func (reader *VideoReader) Open() error {
 		return avutil.ErrorFromCode(ret)
 	}
 	videoStreamIdx := -1
-	for i, _ := range reader.fmtCtx.Streams() {
+	for i := range reader.fmtCtx.Streams() {
 		if reader.fmtCtx.Streams()[i].CodecParameters().CodecType() == avutil.AVMEDIA_TYPE_VIDEO {
 			videoStreamIdx = i
 			break

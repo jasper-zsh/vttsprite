@@ -63,7 +63,7 @@ func AvRescaleQ(a int64, bq AVRational, cq AVRational) int64 {
 
 func (f *AVFrame) Linesize() [8]int {
 	var ret [8]int
-	for i, _ := range f.linesize {
+	for i := range f.linesize {
 		ret[i] = int(f.linesize[i])
 	}
 	return ret
