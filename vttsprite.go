@@ -6,6 +6,7 @@ import (
 	"jasper-zsh/vttsprite/wrapper"
 	"math"
 	"os"
+	"path"
 	"time"
 
 	"github.com/fogleman/gg"
@@ -13,13 +14,17 @@ import (
 )
 
 const (
-	ROWS  = 5
-	COLS  = 3
+	ROWS  = 100
+	COLS  = 4
 	WIDTH = 300
 )
 
 func main() {
-	inputFile := "sample.mp4"
+	inputFile := os.Args[1]
+	dirPath := path.Dir(inputFile)
+	videoFilename := path.Base(inputFile)
+	spriteFilename := videoFilename + ".sprite.jpg"
+	vttFilename := videoFilename + ".vtt"
 	videoReader := wrapper.VideoReader{
 		FileName: inputFile,
 	}
@@ -34,6 +39,7 @@ func main() {
 	everyNFrames := float64(videoReader.VideoInfo().FrameCount) / ROWS / COLS
 
 	spriteCtx := gg.NewContext(WIDTH*COLS, targetHeight*ROWS)
+	vttContent := "WEBVTT\n\n"
 
 	curTs := 0.0
 	curFrameIdx := 0.0
@@ -63,15 +69,45 @@ func main() {
 			execTime = now
 		}
 
+		vttContent += fmt.Sprintf(
+			"%02d:%02d:%02d.%03d --> %02d:%02d:%02d.%03d\n%s#xywh=%d,%d,%d,%d\n\n",
+			int(curTs)/3600,
+			int(curTs)/60%60,
+			int(curTs)%60,
+			int(curTs*1000)%1000,
+			int(curTs+everyNSeconds)/3600,
+			int(curTs+everyNSeconds)/60%60,
+			int(curTs+everyNSeconds)%60,
+			int((curTs+everyNSeconds)*1000)%1000,
+			spriteFilename,
+			WIDTH*(col),
+			targetHeight*row,
+			WIDTH,
+			targetHeight,
+		)
+
 		curTs += everyNSeconds
 		curFrameIdx += everyNFrames
 		idx += 1
 	}
 
-	f, _ := os.Create("out.jpg")
+	f, err := os.Create(path.Join(dirPath, spriteFilename))
+	if err != nil {
+		fmt.Printf("Failed to create sprite file.")
+		panic(err)
+	}
 	defer f.Close()
 
 	jpeg.Encode(f, spriteCtx.Image(), &jpeg.Options{Quality: 80})
+
+	vttFile, err := os.Create(path.Join(dirPath, vttFilename))
+	if err != nil {
+		fmt.Printf("Failed to create vtt file.")
+		panic(err)
+	}
+	defer vttFile.Close()
+
+	vttFile.WriteString(vttContent)
 
 	// videoReader.Release()
 }
