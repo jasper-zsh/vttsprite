@@ -26,6 +26,10 @@ func AvcodecAllocContext3(codec *AVCodec) *AVCodecContext {
 	return (*AVCodecContext)(C.avcodec_alloc_context3((*C.struct_AVCodec)(unsafe.Pointer(codec))))
 }
 
+func AvcodecFreeContext(ctx **AVCodecContext) {
+	C.avcodec_free_context((**C.struct_AVCodecContext)(unsafe.Pointer(ctx)))
+}
+
 func AvcodecParametersToContext(codec *AVCodecContext, par *AVCodecParameters) int {
 	return int(C.avcodec_parameters_to_context(
 		(*C.struct_AVCodecContext)(unsafe.Pointer(codec)),

@@ -7,6 +7,10 @@ package avutil
 import "C"
 import "errors"
 
+const (
+	EAGAIN = -11
+)
+
 func ErrorFromCode(code int) error {
 	if code >= 0 {
 		return nil

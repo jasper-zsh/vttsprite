@@ -21,3 +21,7 @@ func (par *AVCodecParameters) CodecId() AVCodecID {
 func (pkt *AVPacket) StreamIndex() int {
 	return int(pkt.stream_index)
 }
+
+func (ctx *AVCodecContext) PixFmt() avutil.AVPixelFormat {
+	return avutil.AVPixelFormat(ctx.pix_fmt)
+}
