@@ -47,11 +47,3 @@ func SwsScale(
 		(*C.int)(unsafe.Pointer(&dstStride)),
 	))
 }
-
-func SwsScaleFrame(c *SwsContext, dst *avutil.AVFrame, src *avutil.AVFrame) int {
-	return int(C.sws_scale_frame(
-		(*C.struct_SwsContext)(unsafe.Pointer(c)),
-		(*C.struct_AVFrame)(unsafe.Pointer(dst)),
-		(*C.struct_AVFrame)(unsafe.Pointer(src)),
-	))
-}
