@@ -5,6 +5,7 @@ package avutil
 //#include <libavutil/avutil.h>
 //#include <libavutil/frame.h>
 //#include <libavutil/imgutils.h>
+//#include <stdlib.h>
 import "C"
 import (
 	"reflect"
@@ -45,8 +46,11 @@ func AvFrameAlloc() *AVFrame {
 	return (*AVFrame)(C.av_frame_alloc())
 }
 
-func AvFrameFree(frame **AVFrame) {
-	C.av_frame_free((**C.struct_AVFrame)(unsafe.Pointer(frame)))
+func AvFrameFree(frame *AVFrame) {
+	var t *C.struct_AVFrame
+	ptr := C.malloc(C.size_t(unsafe.Sizeof(t)))
+	defer C.free(ptr)
+	C.av_frame_free((**C.struct_AVFrame)(ptr))
 }
 
 func AvMalloc(size uint32) unsafe.Pointer {

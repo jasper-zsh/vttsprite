@@ -108,16 +108,20 @@ func (reader *VideoReader) Read() (image.Image, error) {
 
 func (r *VideoReader) Release() error {
 	if r.packet != nil {
-		avcodec.AvPacketFree(&r.packet)
+		avcodec.AvPacketFree(r.packet)
+		r.packet = nil
 	}
 	if r.rawFrame != nil {
-		avutil.AvFrameFree(&r.rawFrame)
+		avutil.AvFrameFree(r.rawFrame)
+		r.rawFrame = nil
 	}
 	if r.fmtCtx != nil {
-		avformat.AvformatCloseInput(&r.fmtCtx)
+		avformat.AvformatCloseInput(r.fmtCtx)
+		r.fmtCtx = nil
 	}
 	if r.codecCtx != nil {
-		avcodec.AvcodecFreeContext(&r.codecCtx)
+		avcodec.AvcodecFreeContext(r.codecCtx)
+		r.codecCtx = nil
 	}
 	return nil
 }

@@ -33,6 +33,7 @@ func main() {
 		fmt.Printf("Failed to open video. %s", err.Error())
 		os.Exit(1)
 	}
+	defer videoReader.Release()
 
 	targetHeight := int(math.Round(float64(WIDTH) / float64(videoReader.VideoInfo().Width) * float64(videoReader.VideoInfo().Height)))
 	everyNSeconds := videoReader.VideoInfo().Duration / ROWS / COLS
@@ -45,6 +46,8 @@ func main() {
 	curFrameIdx := 0.0
 	idx := 0
 	execTime := time.Now().Unix()
+	perf := wrapper.Perf{}
+	perf.Start()
 	for idx < ROWS*COLS {
 		T1 := PerfTimer()
 		videoReader.SeekSeconds(curTs)
@@ -63,9 +66,22 @@ func main() {
 		T4 := PerfTimer()
 		spriteCtx.DrawImage(scaled, x, y)
 		T5 := PerfTimer()
+		perf.Record(int64(curTs * 1000))
+		perf.RecordTiming("seek", T2-T1)
+		perf.RecordTiming("read", T3-T2)
+		perf.RecordTiming("resize", T4-T3)
+		perf.RecordTiming("draw", T5-T4)
 		now := time.Now().Unix()
 		if now-execTime >= 1 {
-			fmt.Printf("Timestamp: %.3fs Perf(ms) Seek: %.3f Read: %.3f Resize: %.3f Draw: %.3f\n", curTs, T2-T1, T3-T2, T4-T3, T5-T4)
+			fmt.Printf(
+				"Timestamp: %.3fs Speed: %.2fX Perf(ms) Seek: %.3f Read: %.3f Resize: %.3f Draw: %.3f\n",
+				curTs,
+				perf.GetSpeed(),
+				perf.AvgPeriodTiming("seek"),
+				perf.AvgPeriodTiming("read"),
+				perf.AvgPeriodTiming("resize"),
+				perf.AvgPeriodTiming("draw"),
+			)
 			execTime = now
 		}
 
@@ -90,6 +106,16 @@ func main() {
 		curFrameIdx += everyNFrames
 		idx += 1
 	}
+	perf.Stop()
+	fmt.Printf(
+		"Finished %d frames at %.2fX speed. Perf(ms) Seek: %.3f Read: %.3f Resize: %.3f Draw: %.3f\n",
+		int64(curFrameIdx),
+		perf.GetSpeed(),
+		perf.AvgTiming("seek"),
+		perf.AvgTiming("read"),
+		perf.AvgTiming("resize"),
+		perf.AvgTiming("draw"),
+	)
 
 	f, err := os.Create(path.Join(dirPath, spriteFilename))
 	if err != nil {
@@ -108,8 +134,6 @@ func main() {
 	defer vttFile.Close()
 
 	vttFile.WriteString(vttContent)
-
-	// videoReader.Release()
 }
 
 func PerfTimer() float64 {

@@ -3,6 +3,7 @@ package avcodec
 //#cgo pkg-config: libavcodec
 //
 //#include <libavcodec/avcodec.h>
+//#include "stdlib.h"
 import "C"
 import (
 	"jasper-zsh/vttsprite/avutil"
@@ -24,8 +25,11 @@ func AvcodecAllocContext3(codec *AVCodec) *AVCodecContext {
 	return (*AVCodecContext)(C.avcodec_alloc_context3((*C.struct_AVCodec)(unsafe.Pointer(codec))))
 }
 
-func AvcodecFreeContext(ctx **AVCodecContext) {
-	C.avcodec_free_context((**C.struct_AVCodecContext)(unsafe.Pointer(ctx)))
+func AvcodecFreeContext(ctx *AVCodecContext) {
+	var t *C.struct_AVCodecContext
+	ptr := C.malloc(C.size_t(unsafe.Sizeof(t)))
+	defer C.free(ptr)
+	C.avcodec_free_context((**C.struct_AVCodecContext)(ptr))
 }
 
 func AvcodecParametersToContext(codec *AVCodecContext, par *AVCodecParameters) int {
@@ -47,8 +51,11 @@ func AvPacketAlloc() *AVPacket {
 	return (*AVPacket)(C.av_packet_alloc())
 }
 
-func AvPacketFree(pkt **AVPacket) {
-	C.av_packet_free((**C.struct_AVPacket)(unsafe.Pointer(pkt)))
+func AvPacketFree(pkt *AVPacket) {
+	var t *C.struct_AVPacket
+	ptr := C.malloc(C.size_t(unsafe.Sizeof(t)))
+	defer C.free(ptr)
+	C.av_packet_free((**C.struct_AVPacket)(ptr))
 }
 
 func AvPacketUnref(pkt *AVPacket) {

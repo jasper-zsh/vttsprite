@@ -4,6 +4,7 @@ package avformat
 //
 //#include <libavformat/avformat.h>
 //#include <libavcodec/avcodec.h>
+//#include <stdlib.h>
 import "C"
 import (
 	"jasper-zsh/vttsprite/avcodec"
@@ -32,8 +33,11 @@ func AvformatFreeContext(ctx *AVFormatContext) {
 	C.avformat_free_context((*C.struct_AVFormatContext)(unsafe.Pointer(ctx)))
 }
 
-func AvformatCloseInput(ctx **AVFormatContext) {
-	C.avformat_close_input((**C.struct_AVFormatContext)(unsafe.Pointer(ctx)))
+func AvformatCloseInput(ctx *AVFormatContext) {
+	var t *C.struct_AVFormatContext
+	ptr := C.malloc(C.size_t(unsafe.Sizeof(t)))
+	defer C.free(ptr)
+	C.avformat_close_input((**C.struct_AVFormatContext)(ptr))
 }
 
 func AvformatOpenInput(ps **AVFormatContext, url string, fmt *AVInputFormat, options **avutil.AVDictionary) int {
